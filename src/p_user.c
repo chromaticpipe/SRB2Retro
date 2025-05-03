@@ -9624,7 +9624,7 @@ void P_PlayerThink(player_t *player)
 	if ((player->health <= 0 || player->mo->health <= 0) && player->playerstate == PST_LIVE) //you should be DEAD!
 	{
 		if (server && (netgame || cv_debug))
-			CONS_Printf("Note: Player %"PRIdS" in PST_LIVE with 0 health. (Zombie bug)\n", playeri);
+			CONS_Printf("Note: Player %s in PST_LIVE with 0 health. (Zombie bug)\n", sizeu1(playeri));
 		player->playerstate = PST_DEAD;
 	}
 

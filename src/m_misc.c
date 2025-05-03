@@ -71,14 +71,29 @@
 #define _FILE_OFFSET_BITS 0
 #endif
 
+
+
+ #include "zlib.h"
  #include "png.h"
  #ifdef PNG_WRITE_SUPPORTED
   #define USE_PNG // Only actually use PNG if write is supported.
   #if defined (PNG_WRITE_APNG_SUPPORTED) //|| !defined(PNG_STATIC)
-   #define USE_APNG
+  #if (PNG_LIBPNG_VER_MAJOR) == 1 && (PNG_LIBPNG_VER_MINOR <= 4) // Supposedly, the current APNG code can't work on newer versions as is
+  #define USE_APNG
+   #endif
   #endif
   // See hardware/hw_draw.c for a similar check to this one.
  #endif
+#endif
+
+#if defined(__MINGW32__) && ((__GNUC__ > 7) || (__GNUC__ == 6 && __GNUC_MINOR__ >= 3)) && (__GNUC__ < 8)
+#define PRIdS "u"
+#elif defined (_WIN32)
+#define PRIdS "Iu"
+#elif defined (DJGPP)
+#define PRIdS "u"
+#else
+#define PRIdS "zu"
 #endif
 
 static CV_PossibleValue_t screenshot_cons_t[] = {{0, "Default"}, {1, "HOME"}, {2, "SRB2"}, {3, "CUSTOM"}, {0, NULL}};
@@ -551,6 +566,7 @@ static const char *Newsnapshotfile(const char *pathname, const char *ext)
 	return freename;
 }
 #endif
+
 
 #ifdef HAVE_PNG
 FUNCNORETURN static void PNG_error(png_structp PNG, png_const_charp pngtext)
@@ -1355,6 +1371,48 @@ void strcatbf(char *s1, const char *s2, const char *s3)
 	strcat(s1, s3);
 	strcat(s1, tmp);
 }
+
+/** Set of functions to take in a size_t as an argument,
+  * put the argument in a character buffer, and return the
+  * pointer to that buffer.
+  * This is to eliminate usage of PRIdS, so gettext can work
+  * with *all* of SRB2's strings.
+  */
+ char *sizeu1(size_t num)
+ {
+	 static char sizeu1_buf[28];
+	 sprintf(sizeu1_buf, "%"PRIdS, num);
+	 return sizeu1_buf;
+ }
+ 
+ char *sizeu2(size_t num)
+ {
+	 static char sizeu2_buf[28];
+	 sprintf(sizeu2_buf, "%"PRIdS, num);
+	 return sizeu2_buf;
+ }
+ 
+ char *sizeu3(size_t num)
+ {
+	 static char sizeu3_buf[28];
+	 sprintf(sizeu3_buf, "%"PRIdS, num);
+	 return sizeu3_buf;
+ }
+ 
+ char *sizeu4(size_t num)
+ {
+	 static char sizeu4_buf[28];
+	 sprintf(sizeu4_buf, "%"PRIdS, num);
+	 return sizeu4_buf;
+ }
+ 
+ char *sizeu5(size_t num)
+ {
+	 static char sizeu5_buf[28];
+	 sprintf(sizeu5_buf, "%"PRIdS, num);
+	 return sizeu5_buf;
+ }
+ 
 
 #if defined (__GNUC__) && defined (__i386__) // from libkwave, under GPL
 // Alam: note libkwave memcpy code comes from mplayer's libvo/aclib_template.c, r699

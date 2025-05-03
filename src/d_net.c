@@ -749,12 +749,12 @@ static void DebugPrintpacket(const char *header)
 				netbuffer->u.clientcfg.mode);
 			break;
 		case PT_SERVERTICS:
-			fprintf(debugfile, "    firsttic %u ply %d tics %d ntxtcmd %"PRIdS"\n    ",
-				(UINT32)ExpandTics(netbuffer->u.serverpak.starttic), netbuffer->u.serverpak.numslots,
-				netbuffer->u.serverpak.numtics,
-				(size_t)(&((UINT8 *)netbuffer)[doomcom->datalength] - (UINT8 *)&netbuffer->u.serverpak.cmds[netbuffer->u.serverpak.numslots*netbuffer->u.serverpak.numtics]));
-			fprintfstring((char *)&netbuffer->u.serverpak.cmds[netbuffer->u.serverpak.numslots*netbuffer->u.serverpak.numtics],(size_t)(
-				&((UINT8 *)netbuffer)[doomcom->datalength] - (UINT8 *)&netbuffer->u.serverpak.cmds[netbuffer->u.serverpak.numslots*netbuffer->u.serverpak.numtics]));
+		fprintf(debugfile, "    firsttic %u ply %d tics %d ntxtcmd %s\n    ",
+			(UINT32)ExpandTics(netbuffer->u.serverpak.starttic), netbuffer->u.serverpak.numslots,
+			netbuffer->u.serverpak.numtics,
+			sizeu1((size_t)(&((UINT8 *)netbuffer)[doomcom->datalength] - (UINT8 *)&netbuffer->u.serverpak.cmds[netbuffer->u.serverpak.numslots*netbuffer->u.serverpak.numtics])));
+		fprintfstring((char *)&netbuffer->u.serverpak.cmds[netbuffer->u.serverpak.numslots*netbuffer->u.serverpak.numtics],(size_t)(
+			&((UINT8 *)netbuffer)[doomcom->datalength] - (UINT8 *)&netbuffer->u.serverpak.cmds[netbuffer->u.serverpak.numslots*netbuffer->u.serverpak.numtics]));
 			break;
 		case PT_CONSISTENCY:
 			fprintf(debugfile, "    randomseed %d playernum %d hasmo %d\n",

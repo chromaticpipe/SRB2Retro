@@ -85,9 +85,11 @@
 #include "../../tools/fmoddyn.h"
 #include <FMOD/fmod_errors.h>
 #else
+#if 0
 #include <fmod.h>
 #include "../../tools/fmoddyn.h"
 #include <fmod_errors.h>
+#endif
 #endif
 #define FMODMEMORY
 #endif

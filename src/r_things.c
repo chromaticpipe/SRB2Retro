@@ -425,7 +425,7 @@ void R_AddSpriteDefs(UINT16 wadnum)
 		}
 	}
 
-	CONS_Printf("%"PRIdS" sprites added from file %s\n", addsprites, wadfiles[wadnum]->filename);
+	CONS_Printf("%s sprites added from file %s\n", sizeu1(addsprites), wadfiles[wadnum]->filename);
 }
 
 void R_DelSpriteDefs(UINT16 wadnum)
@@ -473,7 +473,7 @@ void R_DelSpriteDefs(UINT16 wadnum)
 		}
 	}
 
-	CONS_Printf("%"PRIdS" sprites removed from file %s\n", delsprites, wadfiles[wadnum]->filename);
+	CONS_Printf("%s sprites removed from file %s\n", sizeu1(delsprites), wadfiles[wadnum]->filename);
 }
 
 //
@@ -1068,7 +1068,7 @@ static void R_ProjectSprite(mobj_t *thing)
 		 thing->sprite, rot, sprdef->numframes, sprnames[thing->sprite]);
 #else
 	{
-		CONS_Printf("Warning: Mobj of type %d with invalid sprite frame (%"PRIdS"/%"PRIdS") of %s detected and removed.\n", thing->type, rot, sprdef->numframes, sprnames[thing->sprite]);
+		CONS_Printf("Warning: Mobj of type %d with invalid sprite frame (%s/%s) of %s detected and removed.\n", thing->type, sizeu1(rot), sizeu2(sprdef->numframes), sprnames[thing->sprite]);
 		if (thing->player)
 		{
 			P_SetPlayerMobjState(thing, S_PLAY_STND);

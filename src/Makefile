@@ -604,12 +604,11 @@ endif
 
 $(OBJDIR)/depend.dep:
 	@echo "Creating dependency file, depend.dep"
-	@echo > comptime.h
 	-$(MKDIR) $(OBJDIR)
-	$(CC) $(CFLAGS) -MM *.c > $(OBJDIR)/depend.ped
-	$(CC) $(CFLAGS) -MM $(INTERFACE)/*.c >> $(OBJDIR)/depend.ped
+	$(CC) $(CFLAGS) -MM $(wildcard *.c) > $(OBJDIR)/depend.ped
+	$(CC) $(CFLAGS) -MM $(wildcard $(INTERFACE)/*.c) >> $(OBJDIR)/depend.ped
 ifndef NOHW
-	$(CC) $(CFLAGS) -MM hardware/*.c >> $(OBJDIR)/depend.ped
+	$(CC) $(CFLAGS) -MM $(wildcard hardware/*.c) >> $(OBJDIR)/depend.ped
 endif
 	@sed -e 's,\(.*\)\.o: ,$(subst /,\/,$(OBJDIR))\/&,g' < $(OBJDIR)/depend.ped > $(OBJDIR)/depend.dep
 	$(REMOVE) $(OBJDIR)/depend.ped
@@ -630,8 +629,7 @@ $(OBJDIR)/z_zone.o: z_zone.c
 	$(CC) $(CFLAGS) $(WFLAGS) -DHAVE_VALGRIND $(VALGRIND_CFLAGS) -c $< -o $@
 endif
 
-$(OBJDIR)/comptime.o: comptime.c pre-build
-	$(CC) $(CFLAGS) $(WFLAGS) -c $< -o $@
+
 
 $(OBJDIR)/%.o: %.c
 	$(CC) $(CFLAGS) $(WFLAGS) -c $< -o $@

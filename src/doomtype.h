@@ -1,24 +1,18 @@
-// Emacs style mode select   -*- C++ -*-
+// SONIC ROBO BLAST 2
 //-----------------------------------------------------------------------------
-//
 // Copyright (C) 1993-1996 by id Software, Inc.
 // Copyright (C) 1998-2000 by DooM Legacy Team.
+// Copyright (C) 1999-2016 by Sonic Team Junior.
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// This program is free software distributed under the
+// terms of the GNU General Public License, version 2.
+// See the 'LICENSE' file for more details.
 //-----------------------------------------------------------------------------
-/// \file
+/// \file  doomtype.h
 /// \brief SRB2 standard types
 ///
-///	Simple basic typedefs, isolated here to make it easier
-///	separating modules.
+///        Simple basic typedefs, isolated here to make it easier
+///        separating modules.
 
 #ifndef __DOOMTYPE__
 #define __DOOMTYPE__
@@ -27,6 +21,10 @@
 //#define WIN32_LEAN_AND_MEAN
 #define RPC_NO_WINDOWS_H
 #include <windows.h>
+#endif
+
+#ifdef _NDS
+#include <nds.h>
 #endif
 
 /* 7.18.1.1  Exact-width integer types */
@@ -46,12 +44,13 @@
 typedef long ssize_t;
 
 /* Older Visual C++ headers don't have the Win64-compatible typedefs... */
-#if ((_MSC_VER <= 1200) && (!defined(DWORD_PTR)))
-#define DWORD_PTR DWORD
-#endif
-
-#if ((_MSC_VER <= 1200) && (!defined(PDWORD_PTR)))
-#define PDWORD_PTR PDWORD
+#if (_MSC_VER <= 1200)
+	#ifndef DWORD_PTR
+		#define DWORD_PTR DWORD
+	#endif
+	#ifndef PDWORD_PTR
+		#define PDWORD_PTR PDWORD
+	#endif
 #endif
 #elif defined (_arch_dreamcast) // KOS Dreamcast
 #include <arch/types.h>
@@ -94,19 +93,21 @@ typedef long ssize_t;
 #endif
 
 #ifdef __APPLE_CC__
-#define DIRECTFULLSCREEN
+#define DIRECTFULLSCREEN 1
 #define DEBUG_LOG
-#define HWRENDER
 #define NOIPX
-#define SHUFFLE
 #endif
+
+/* Strings and some misc platform specific stuff */
 
 #if defined (_MSC_VER) || defined (__OS2__)
 	// Microsoft VisualC++
 #ifdef _MSC_VER
+#if (_MSC_VER <= 1800) // MSVC 2013 and back
 	#define snprintf                _snprintf
-#if (_MSC_VER <= 1200)
+#if (_MSC_VER <= 1200) // MSVC 6.0 and back
 	#define vsnprintf               _vsnprintf
+#endif
 #endif
 #endif
 	#define strncasecmp             strnicmp
@@ -122,7 +123,7 @@ typedef long ssize_t;
 #endif
 #ifdef _PSP
 	#include <malloc.h>
-#elif defined (__unix__) || defined(__APPLE__) || defined (UNIXCOMMON)
+#elif (defined (__unix__) && !defined (MSDOS)) || defined(__APPLE__) || defined (UNIXCOMMON)
 	#undef stricmp
 	#define stricmp(x,y) strcasecmp(x,y)
 	#undef strnicmp
@@ -156,7 +157,7 @@ typedef long ssize_t;
 	#endif
 #endif //macintosh
 
-#if defined (PC_DOS) || defined (_WIN32) || defined (_PSP) || defined (_arch_dreamcast) || defined (__HAIKU__)
+#if defined (PC_DOS) || defined (_WIN32) || defined (_WII) || defined (_PSP) || defined (_arch_dreamcast) || defined (__HAIKU__) || defined(_NDS)  || defined(_PS3)
 #define HAVE_DOSSTR_FUNCS
 #endif
 
@@ -180,18 +181,28 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 // not the number of bytes in the buffer.
 #define STRBUFCPY(dst,src) strlcpy(dst, src, sizeof dst)
 
+/* Boolean type definition */
+
+// \note __BYTEBOOL__ used to be set above if "macintosh" was defined,
+// if macintosh's version of boolean type isn't needed anymore, then isn't this macro pointless now?
 #ifndef __BYTEBOOL__
 	#define __BYTEBOOL__
 
 	//faB: clean that up !!
-	#if (defined (_WIN32) || (defined (_WIN32_WCE) && !defined (__GNUC__))) && !defined (_XBOX)
+	#if defined( _MSC_VER)  && (_MSC_VER >= 1800) // MSVC 2013 and forward
+		#include "stdbool.h"
+	#elif (defined (_WIN32) || (defined (_WIN32_WCE) && !defined (__GNUC__))) && !defined (_XBOX)
 		#define false   FALSE           // use windows types
 		#define true    TRUE
 		#define boolean BOOL
+	#elif defined(_NDS)
+		#define boolean bool
+	#elif defined(_PS3) // defined(__GNUC__)?
+		#include <stdbool.h>  //_bool_true_false_are_defined?
+		#define boolean bool
 	#else
 		typedef enum {false, true} boolean;
 	#endif
-	//#endif // __cplusplus
 #endif // __BYTEBOOL__
 
 /* 7.18.2.1  Limits of exact-width integer types */
@@ -234,97 +245,78 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 #define UINT64_MAX 0xffffffffffffffffULL /* 18446744073709551615ULL */
 #endif
 
-union FColorRGBA
-{
-	UINT32 rgba;
-	struct
-	{
-		UINT8 red;
-		UINT8 green;
-		UINT8 blue;
-		UINT8 alpha;
-	} s;
-} ATTRPACK;
-typedef union FColorRGBA RGBA_t;
-
-typedef enum
-{
-	postimg_none,
-	postimg_water,
-	postimg_motion,
-	postimg_flip,
-	postimg_heat
-} postimg_t;
-
-typedef UINT32 lumpnum_t; // 16 : 16 unsigned long (wad num: lump num)
-#define LUMPERROR UINT32_MAX
-
-typedef UINT32 tic_t;
-#define INFTICS UINT32_MAX
-
-#ifdef _BIG_ENDIAN
-#define UINT2RGBA(a) a
-#else
-#define UINT2RGBA(a) (UINT32)((a&0xff)<<24)|((a&0xff00)<<8)|((a&0xff0000)>>8)|(((UINT32)a&0xff000000)>>24)
-#endif
-
-#if defined (_WIN32)
-#define PRIdS "Iu"
-#elif defined (_PSP) || defined (_arch_dreamcast)
-#define PRIdS "u"
-#else
-#define PRIdS "zu"
-#endif
+/* Compiler-specific attributes and other macros */
 
 #ifdef __GNUC__ // __attribute__ ((X))
-#define FUNCNORETURN __attribute__ ((noreturn))
-#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)) && defined (__MINGW32__)
-#include "inttypes.h"
-#if 0 //defined  (__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO > 0
-#define FUNCPRINTF __attribute__ ((format(gnu_printf, 1, 2)))
-#define FUNCIERROR __attribute__ ((format(gnu_printf, 1, 2),noreturn))
-#elif (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
-#define FUNCPRINTF __attribute__ ((format(ms_printf, 1, 2)))
-#define FUNCIERROR __attribute__ ((format(ms_printf, 1, 2),noreturn))
-#else
-#define FUNCPRINTF __attribute__ ((format(printf, 1, 2)))
-#define FUNCIERROR __attribute__ ((format(printf, 1, 2),noreturn))
-#endif
-#else
-#define FUNCPRINTF __attribute__ ((format(printf, 1, 2)))
-#define FUNCIERROR __attribute__ ((format(printf, 1, 2),noreturn))
-#endif
-#ifndef FUNCIERROR
-#define FUNCIERROR __attribute__ ((noreturn))
-#endif
-#define FUNCMATH __attribute__((const))
-#if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)
-#define FUNCDEAD __attribute__ ((deprecated))
-#define FUNCINLINE __attribute__((always_inline))
-#define FUNCNONNULL __attribute__((nonnull))
-#endif
-#define FUNCNOINLINE __attribute__((noinline))
-#if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
-#ifdef __i386__ // i386 only
-#define FUNCTARGET(X)  __attribute__ ((__target__ (X)))
-#endif
-#endif
-#define ATTRPACK __attribute__((packed))
-#define ATTRUNUSED __attribute__((unused))
-#ifdef _XBOX
-#define FILESTAMP I_OutputMsg("%s:%d\n",__FILE__,__LINE__);
-#define XBOXSTATIC static
-#endif
+	#define FUNCNORETURN __attribute__ ((noreturn))
+
+	#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)) && defined (__MINGW32__) // MinGW, >= GCC 4.1
+		#include "inttypes.h"
+		#if 0 //defined  (__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO > 0
+			#define FUNCPRINTF __attribute__ ((format(gnu_printf, 1, 2)))
+			#define FUNCDEBUG  __attribute__ ((format(gnu_printf, 2, 3)))
+			#define FUNCIERROR __attribute__ ((format(gnu_printf, 1, 2),noreturn))
+		#elif (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4) // >= GCC 4.4
+			#define FUNCPRINTF __attribute__ ((format(ms_printf, 1, 2)))
+			#define FUNCDEBUG  __attribute__ ((format(ms_printf, 2, 3)))
+			#define FUNCIERROR __attribute__ ((format(ms_printf, 1, 2),noreturn))
+		#else
+			#define FUNCPRINTF __attribute__ ((format(printf, 1, 2)))
+			#define FUNCDEBUG  __attribute__ ((format(printf, 2, 3)))
+			#define FUNCIERROR __attribute__ ((format(printf, 1, 2),noreturn))
+		#endif
+	#else
+		#define FUNCPRINTF __attribute__ ((format(printf, 1, 2)))
+		#define FUNCDEBUG  __attribute__ ((format(printf, 2, 3)))
+		#define FUNCIERROR __attribute__ ((format(printf, 1, 2),noreturn))
+	#endif
+
+	#ifndef FUNCIERROR
+		#define FUNCIERROR __attribute__ ((noreturn))
+	#endif
+
+	#define FUNCMATH __attribute__((const))
+
+	#if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1) // >= GCC 3.1
+		#define FUNCDEAD __attribute__ ((deprecated))
+		#define FUNCINLINE __attribute__((always_inline))
+		#define FUNCNONNULL __attribute__((nonnull))
+	#endif
+
+	#define FUNCNOINLINE __attribute__((noinline))
+
+	#if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4) // >= GCC 4.4
+		#ifdef __i386__ // i386 only
+			#define FUNCTARGET(X)  __attribute__ ((__target__ (X)))
+		#endif
+	#endif
+
+	#if defined (__MINGW32__) && ((__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)) // MinGW, >= GCC 3.4
+		#define ATTRPACK __attribute__((packed, gcc_struct))
+	#else
+		#define ATTRPACK __attribute__((packed))
+	#endif
+
+	#define ATTRUNUSED __attribute__((unused))
+
+	// Xbox-only macros
+	#ifdef _XBOX
+		#define FILESTAMP I_OutputMsg("%s:%d\n",__FILE__,__LINE__);
+		#define XBOXSTATIC static
+	#endif
 #elif defined (_MSC_VER)
-#define ATTRNORETURN __declspec(noreturn)
-#define ATTRINLINE __forceinline
-#if _MSC_VER > 1200
-#define ATTRNOINLINE __declspec(noinline)
-#endif
+	#define ATTRNORETURN __declspec(noreturn)
+	#define ATTRINLINE __forceinline
+	#if _MSC_VER > 1200 // >= MSVC 6.0
+		#define ATTRNOINLINE __declspec(noinline)
+	#endif
 #endif
 
 #ifndef FUNCPRINTF
 #define FUNCPRINTF
+#endif
+#ifndef FUNCDEBUG
+#define FUNCDEBUG
 #endif
 #ifndef FUNCNORETURN
 #define FUNCNORETURN
@@ -353,6 +345,9 @@ typedef UINT32 tic_t;
 #ifndef ATTRPACK
 #define ATTRPACK
 #endif
+#ifndef ATTRUNUSED
+#define ATTRUNUSED
+#endif
 #ifndef ATTRNORETURN
 #define ATTRNORETURN
 #endif
@@ -368,4 +363,43 @@ typedef UINT32 tic_t;
 #ifndef FILESTAMP
 #define FILESTAMP
 #endif
+
+/* Miscellaneous types that don't fit anywhere else (Can this be changed?) */
+
+union FColorRGBA
+{
+	UINT32 rgba;
+	struct
+	{
+		UINT8 red;
+		UINT8 green;
+		UINT8 blue;
+		UINT8 alpha;
+	} s;
+} ATTRPACK;
+typedef union FColorRGBA RGBA_t;
+
+typedef enum
+{
+	postimg_none,
+	postimg_water,
+	postimg_motion,
+	postimg_flip,
+	postimg_heat
+} postimg_t;
+
+typedef UINT32 lumpnum_t; // 16 : 16 unsigned long (wad num: lump num)
+#define LUMPERROR UINT32_MAX
+
+typedef UINT32 tic_t;
+#define INFTICS UINT32_MAX
+
+#include "endian.h" // This is needed to make sure the below macro acts correctly in big endian builds
+
+#ifdef SRB2_BIG_ENDIAN
+#define UINT2RGBA(a) a
+#else
+#define UINT2RGBA(a) (UINT32)((a&0xff)<<24)|((a&0xff00)<<8)|((a&0xff0000)>>8)|(((UINT32)a&0xff000000)>>24)
+#endif
+
 #endif //__DOOMTYPE__
