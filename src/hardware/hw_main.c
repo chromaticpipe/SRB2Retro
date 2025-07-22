@@ -4596,6 +4596,17 @@ void HWR_SetViewSize(void)
 // ==========================================================================
 void HWR_RenderPlayerView(INT32 viewnumber, player_t *player)
 {
+	FRGBAFloat ClearColor;
+
+
+	ClearColor.red = 0.0f;
+	ClearColor.green = 0.0f;
+	ClearColor.blue = 0.0f;
+	ClearColor.alpha = 1.0f;
+
+	if (viewnumber == 0) // Only do it if it's the first screen being rendered
+		HWD.pfnClearBuffer(true, false, &ClearColor); // Clear the Color Buffer, stops HOMs. Also seems to fix the skybox issue on Intel
+
 	const float fpov = FIXED_TO_FLOAT(cv_grfov.value+player->fovadd);
 	{
 		// do we really need to save player (is it not the same)?
