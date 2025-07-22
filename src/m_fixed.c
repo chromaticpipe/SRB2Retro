@@ -41,21 +41,12 @@
 */
 fixed_t FixedMul(fixed_t a, fixed_t b)
 {
-#if 0 //defined (_WIN32) && !defined (_XBOX) && !defined (_WIN32_WCE)
-	return (fixed_t)MulDiv(a, b, FRACUNIT);
-#elif 1 // Wine's MulDiv( INT nMultiplicand, INT nMultiplier, INT nDivisor)
-	INT64 ret;
-	// If the result is positive, we "add" to round. else, we subtract to round.
-	if ( ( (a <  0) && (b <  0) ) ||
-	     ( (a >= 0) && (b >= 0) ) )
-		ret = (((INT64)a * b) + (FRACUNIT/2)) / FRACUNIT;
-	else
-		ret = (((INT64)a * b) - (FRACUNIT/2)) / FRACUNIT;
-
-	if ((ret > 2147483647) || (ret < -2147483647)) return -1;
-	return (fixed_t)ret;
+#if (defined (_WIN32) || defined (_WIN64)) && !defined (_XBOX) && !defined (_WIN32_WCE)
+	return MulDiv(a,b,FRACUNIT);
 #else
-	return (fixed_t)(((INT64) a * (INT64) b)>>FRACBITS);
+	// Need to cast to unsigned before shifting to avoid undefined behaviour
+	// for negative integers
+	return (fixed_t)(((UINT64)((INT64)a * b)) >> FRACBITS);
 #endif
 }
 
@@ -73,40 +64,17 @@ fixed_t FixedMul(fixed_t a, fixed_t b)
 */
 fixed_t FixedDiv2(fixed_t a, fixed_t b)
 {
-#if 0 //defined (_WIN32) && !defined (_XBOX) && !defined (_WIN32_WCE)
-	INT c = MulDiv(a, FRACUNIT, b);
+#if (defined (_WIN32) || defined (_WIN64)) && !defined (_XBOX) && !defined (_WIN32_WCE)
+	int c = MulDiv(a,FRACUNIT,b);
 	if (c == -1)
 		I_Error("FixedDiv: divide by zero");
-	return (fixed_t)c;
-#elif 1 // Wine's MulDiv( INT nMultiplicand, INT nMultiplier, INT nDivisor)
-	INT64 ret;
-
-	if (b == 0)
-		I_Error("FixedDiv: divide by zero");
-
-	// We want to deal with a positive divisor to simplify the logic.
-	if (b < 0)
-	{
-		a = -a;
-		b = -b;
-	}
-
-	// If the result is positive, we "add" to round. else, we subtract to round.
-	if (a >= 0)
-		ret = (((INT64)a * FRACUNIT) + (b/2)) / b;
-	else
-		ret = (((INT64)a * FRACUNIT) - (b/2)) / b;
-
-	if ((ret > 2147483647) || (ret < -2147483647))
-		I_Error("FixedDiv: divide by zero");
-	return (fixed_t)ret;
 #else
 	double c = ((double)a) / ((double)b) * FRACUNIT;
 
 	if (c >= 2147483648.0 || c < -2147483648.0)
 		I_Error("FixedDiv: divide by zero");
-	return (fixed_t)c;
 #endif
+	return (fixed_t)c;
 }
 
 #endif // __USE_C_FIXEDDIV__
@@ -313,7 +281,7 @@ vector_t *FV_Cross(const vector_t *a_1, const vector_t *a_2, vector_t *a_o)
 //
 vector_t *FV_ClosestPointOnLine(const vector_t *Line, const vector_t *p, vector_t *out)
 {
-   // Determine t (the length of the vector from ‘Line[0]’ to ‘p’)
+   // Determine t (the length of the vector from ï¿½Line[0]ï¿½ to ï¿½pï¿½)
    vector_t c, V;
    fixed_t t, d = 0;
    FV_SubEx(p, &Line[0], &c);
@@ -323,7 +291,7 @@ vector_t *FV_ClosestPointOnLine(const vector_t *Line, const vector_t *p, vector_
    d = FV_Distance(&Line[0], &Line[1]);
    t = FV_Dot(&V, &c);
 
-   // Check to see if ‘t’ is beyond the extents of the line segment
+   // Check to see if ï¿½tï¿½ is beyond the extents of the line segment
    if (t < 0)
    {
 	   return FV_Copy(out, &Line[0]);
@@ -333,7 +301,7 @@ vector_t *FV_ClosestPointOnLine(const vector_t *Line, const vector_t *p, vector_
 	   return FV_Copy(out, &Line[1]);
    }
 
-   // Return the point between ‘Line[0]’ and ‘Line[1]’
+   // Return the point between ï¿½Line[0]ï¿½ and ï¿½Line[1]ï¿½
    FV_Mul(&V, t);
 
    return FV_AddEx(&Line[0], &V, out);
