@@ -2645,7 +2645,7 @@ static const char *locateWad(void)
 
 	I_OutputMsg("SRB2WADDIR");
 	// does SRB2WADDIR exist?
-	if (((envstr = I_GetEnv("SRB2WADDIR")) != NULL) && isWadPathOk(envstr))
+	if (((envstr = I_GetEnv("SRB220WADDIR")) != NULL) && isWadPathOk(envstr))
 		return envstr;
 
 #ifdef _WIN32_WCE
