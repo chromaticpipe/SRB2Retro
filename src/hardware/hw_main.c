@@ -4292,11 +4292,11 @@ static void HWR_ProjectSprite(mobj_t *thing)
 
 	if (rot >= sprdef->numframes)
 #ifdef RANGECHECK
-		I_Error("HWR_ProjectSprite: nvalid sprite frame %u : %u/%"PRIdS" for %s",
-		 thing->sprite, rot, sprdef->numframes, sprnames[thing->sprite]);
+		I_Error("HWR_ProjectSprite: invalid sprite frame %i : %i for %s",
+		         thing->sprite, thing->frame, sprnames[thing->sprite]);
 #else
 	{
-		CONS_Printf("Warning: Mobj of type %d with invalid sprite frame (%u/%"PRIdS") of %s detected and removed.\n", thing->type, rot, sprdef->numframes, sprnames[thing->sprite]);
+		CONS_Printf("Warning: Mobj of type %d with invalid sprite frame (%u/%s) of %s detected and removed.\n", thing->type, rot, sprdef->numframes, sprnames[thing->sprite]);
 		if (thing->player)
 			P_SetPlayerMobjState(thing, S_PLAY_STND);
 		else
@@ -4877,9 +4877,9 @@ static void Command_GrStats_f(void)
 {
 	Z_CheckHeap(9875); // debug
 
-	CONS_Printf("Patch info headers: %7"PRIdS" kb\n", Z_TagUsage(PU_HWRPATCHINFO)>>10);
-	CONS_Printf("3D Texture cache  : %7"PRIdS" kb\n", Z_TagUsage(PU_HWRCACHE)>>10);
-	CONS_Printf("Plane polygon     : %7"PRIdS" kb\n", Z_TagUsage(PU_HWRPLANE)>>10);
+	CONS_Printf("Patch info headers: %7s kb\n", sizeu1(Z_TagUsage(PU_HWRPATCHINFO)>>10));
+	CONS_Printf("3D Texture cache  : %7s kb\n", sizeu1(Z_TagUsage(PU_HWRCACHE)>>10));
+	CONS_Printf("Plane polygon     : %7s kb\n", sizeu1(Z_TagUsage(PU_HWRPLANE)>>10));
 }
 
 
