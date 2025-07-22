@@ -1985,7 +1985,7 @@ void I_StartupGraphics(void)
 #ifdef HAVE_IMAGE
 	icoSurface = IMG_ReadXPMFromArray(SDL_icon_xpm);
 #endif
-	SDL_WM_SetIcon(icoSurface, NULL);
+	//SDL_WM_SetIcon(icoSurface, NULL);
 
 #ifdef _WIN32
 	//DisableAero(); //also disable Aero on Vista
